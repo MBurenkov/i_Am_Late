@@ -21,16 +21,16 @@ public class SimpleShoot : MonoBehaviour
     public AudioClip fire;
     public AudioClip reload;
     public AudioClip noammo;
-
+    
     [Header("Location Refrences")]
     [SerializeField] private Animator gunAnimator;
-    [SerializeField] private Transform barrelLocation;
-    [SerializeField] private Transform casingExitLocation;
+    [SerializeField] public Transform barrelLocation;
+    [SerializeField] public Transform casingExitLocation;
 
     [Header("Settings")]
     [Tooltip("Specify time to destory the casing object")] [SerializeField] private float destroyTimer = 2f;
-    [Tooltip("Bullet Speed")] [SerializeField] private float shotPower = 500f;
-    [Tooltip("Casing Ejection Speed")] [SerializeField] private float ejectPower = 150f;
+    [Tooltip("Bullet Speed")] [SerializeField] public float shotPower = 1000f;
+    [Tooltip("Casing Ejection Speed")] [SerializeField] private float ejectPower = 500f;
 
 
     void Start()
@@ -68,18 +68,21 @@ public class SimpleShoot : MonoBehaviour
 
 
     //This function creates the bullet behavior
-    void Shoot()
+    public void Shoot()
     {
         currentammo--;
         source.PlayOneShot(fire);
      
         GameObject tempFlash;
         if (bulletPrefab)
-            Instantiate(bulletPrefab, barrelLocation.position, barrelLocation.rotation).GetComponent<Rigidbody>().AddForce(barrelLocation.forward * shotPower);
+            Instantiate(bulletPrefab, barrelLocation.position, barrelLocation.rotation).GetComponent<Rigidbody>().AddForce(barrelLocation.forward * shotPower, ForceMode.VelocityChange);
          tempFlash = Instantiate(muzzleFlashPrefab, barrelLocation.position, barrelLocation.rotation);
         
         RaycastHit hitInfo;
         bool hasHit = Physics.Raycast(barrelLocation.position, barrelLocation.forward, out hitInfo, 100);
+        
+        if(hasHit)
+            hitInfo.collider.SendMessageUpwards("Dead", hitInfo.point,SendMessageOptions.DontRequireReceiver);
 
         if(line)
         {
